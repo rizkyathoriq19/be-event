@@ -24,11 +24,13 @@ const UserSchema = new Schema<User>({
     },
     username: {
         type: Schema.Types.String,
-        required: true
+        required: true,
+        unique: true
     },
     email: {
         type: Schema.Types.String,
-        required: true
+        required: true,
+        unique: true
     },
     password: {
         type: Schema.Types.String,
@@ -57,6 +59,7 @@ const UserSchema = new Schema<User>({
 UserSchema.pre("save", function (next) {
     const self = this;
     self.password = encrypt(self.password);
+    self.activationCode = encrypt(self.id);
     next();
 });
 
@@ -64,8 +67,6 @@ UserSchema.post("save", async function (doc, next) {
     try {
         const user = doc;
         
-        console.log("Send Email to: ", user.email);
-    
         const contentMail = await renderMailHtml("registration-success.ejs", {
             username: user.username,
             fullName: user.fullName,
